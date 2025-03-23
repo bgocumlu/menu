@@ -111,7 +111,7 @@ export default function RestaurantPage(props: { params: Params }) {
                                 className="overflow-hidden border-accent menu-card-shadow md:hover:shadow-md md:transition-shadow"
                             >
                                 <div className="relative -mt-10">
-                                    <div className="relative h-50 w-full overflow-hidden">
+                                    <div className="relative h-55 w-full overflow-hidden">
                                         <Image
                                             src={
                                                 item.image || "/placeholder.svg"
