@@ -110,8 +110,8 @@ export default function RestaurantPage(props: { params: Params }) {
                                 key={index}
                                 className="overflow-hidden border-accent menu-card-shadow md:hover:shadow-md md:transition-shadow"
                             >
-                                <div className="relative">
-                                    <div className="relative h-40 w-full overflow-hidden">
+                                <div className="relative -mt-10">
+                                    <div className="relative h-50 w-full overflow-hidden">
                                         <Image
                                             src={
                                                 item.image || "/placeholder.svg"
@@ -131,7 +131,7 @@ export default function RestaurantPage(props: { params: Params }) {
                                                 {item.name}
                                             </h3>
                                             <div className="price-tag">
-                                                ${item.price}
+                                                {item.price}₺
                                             </div>
                                         </div>
                                     </div>
