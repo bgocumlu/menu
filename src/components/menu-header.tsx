@@ -1,6 +1,6 @@
 "use client"
 
-// import { useState } from "react"
+import { useState } from "react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
 import { ContactPopover } from "@/components/contact-popover"
@@ -11,7 +11,7 @@ interface MenuHeaderProps {
 }
 
 export function MenuHeader({ restaurant }: MenuHeaderProps) {
-  // const [contactOpen, setContactOpen] = useState(false)
+  const [contactOpen, setContactOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-20 border-b border-accent bg-background shadow-xs">

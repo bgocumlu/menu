@@ -1,16 +1,16 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import { notFound } from "next/navigation";
+import { useState, useEffect } from "react"
+import Image from "next/image"
+import { notFound } from "next/navigation"
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { MenuHeader } from "@/components/menu-header";
-import { MenuFooter } from "@/components/menu-footer";
-import { LanguageTooltip } from "@/components/language-tooltip";
-import { getRestaurantData } from "@/lib/data/restaurants";
-import { useLanguage } from "@/lib/context/language-context";
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
+import { MenuHeader } from "@/components/menu-header"
+import { MenuFooter } from "@/components/menu-footer"
+import { LanguageTooltip } from "@/components/language-tooltip"
+import { getRestaurantData } from "@/lib/data/restaurants"
+import { useLanguage } from "@/lib/context/language-context"
 
 import { use } from "react";
 
@@ -18,7 +18,8 @@ type Params = Promise<{ restaurantId: string }>;
 
 export default function RestaurantPage(props: { params: Params }) {
     const params = use(props.params);
-    const restaurant = getRestaurantData(params.restaurantId);
+    const { restaurantId } = params;
+    const restaurant = getRestaurantData(restaurantId);
 
     // If restaurant doesn't exist, show 404
     if (!restaurant) {
@@ -111,7 +112,7 @@ export default function RestaurantPage(props: { params: Params }) {
                                 className="overflow-hidden border-accent menu-card-shadow md:hover:shadow-md md:transition-shadow"
                             >
                                 <div className="relative -mt-10">
-                                    <div className="relative h-55 w-full overflow-hidden">
+                                    <div className="relative h-60 w-full overflow-hidden">
                                         <Image
                                             src={
                                                 item.image || "/placeholder.svg"
@@ -131,7 +132,7 @@ export default function RestaurantPage(props: { params: Params }) {
                                                 {item.name}
                                             </h3>
                                             <div className="price-tag">
-                                                {item.price}₺
+                                                {item.price}
                                             </div>
                                         </div>
                                     </div>
@@ -187,3 +188,4 @@ export default function RestaurantPage(props: { params: Params }) {
         </div>
     );
 }
+

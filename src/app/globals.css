@@ -225,6 +225,25 @@
   animation: fade-in 0.3s ease-out forwards;
 }
 
+@keyframes reorder-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(var(--primary), 0);
+  }
+  50% {
+    transform: scale(1.01);
+    box-shadow: 0 0 10px rgba(var(--primary), 0.2);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(var(--primary), 0);
+  }
+}
+
+.reordering {
+  animation: reorder-pulse 0.3s ease-in-out;
+}
+
 /* Optimize for older devices */
 @media (prefers-reduced-motion: reduce) {
   * {
