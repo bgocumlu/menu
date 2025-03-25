@@ -1,43 +1,90 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import { notFound } from "next/navigation"
+import { useState, useEffect } from "react";
+import useSWR from "swr";
+import Image from "next/image";
+import { notFound } from "next/navigation";
 
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { MenuHeader } from "@/components/menu-header"
-import { MenuFooter } from "@/components/menu-footer"
-import { LanguageTooltip } from "@/components/language-tooltip"
-import { getRestaurantData } from "@/lib/data/restaurants"
-import { useLanguage } from "@/lib/context/language-context"
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { MenuHeader } from "@/components/menu-header";
+import { MenuFooter } from "@/components/menu-footer";
+import { LanguageTooltip } from "@/components/language-tooltip";
+import { Restaurant } from "@/lib/data/restaurants";
+import { useLanguage } from "@/lib/context/language-context";
 
-import { use } from "react";
+// Fetcher function for SWR with logging
+const fetcher = async (url: string) => {
+    console.log(
+        `🔄 Fetching data from ${url} at ${new Date().toLocaleTimeString()}`
+    );
 
-type Params = Promise<{ restaurantId: string }>;
-
-export default function RestaurantPage(props: { params: Params }) {
-    const params = use(props.params);
-    const { restaurantId } = params;
-    const restaurant = getRestaurantData(restaurantId);
-
-    // If restaurant doesn't exist, show 404
-    if (!restaurant) {
+    const res = await fetch(url);
+    if (!res.ok) {
+        console.error(`❌ Error fetching from ${url}: ${res.status}`);
         notFound();
+        throw new Error(`Failed to fetch: ${res.status}`);
     }
 
+    const data = await res.json();
+    console.log(`✅ Successfully fetched data from ${url}`);
+    return data;
+};
+
+
+// async function setPassword(password: string) {
+//     const response = await fetch("/api/password", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ password }),
+//     });
+
+//     const data = await response.json();
+//     console.log(data.message);
+// }
+
+export default function RestaurantPage() {
     const { language } = useLanguage();
     const [activeCategory, setActiveCategory] = useState("starters");
     const [firstVisit, setFirstVisit] = useState(true);
 
-    // Get the appropriate menu data and categories based on language
-    const currentMenuData =
-        language === "tr" ? restaurant.menuData.tr : restaurant.menuData.en;
-    const categories = restaurant.categories[language];
+    // Log component renders
+    console.log(`🔄 Component rendering at ${new Date().toLocaleTimeString()}`);
 
-    // Get the current category data
-    const currentCategory =
-        currentMenuData[activeCategory as keyof typeof currentMenuData];
+    // Use SWR for data fetching with caching
+    const {
+        data: restaurant,
+        error,
+        isLoading,
+    } = useSWR<Restaurant>("/api/restaurant", fetcher, {
+        revalidateOnFocus: false, // Don't refetch when window regains focus
+        revalidateOnReconnect: false, // Don't refetch when browser regains connection
+        dedupingInterval: 3600000, // Cache for 1 hour (in milliseconds)
+        onSuccess: () => {
+            console.log(
+                `✅ SWR cache hit or successful fetch at ${new Date().toLocaleTimeString()}`
+            );
+        },
+        onError: (err) => {
+            console.error(`❌ SWR error: ${err.message}`);
+        },
+    });
+
+    // Log loading state changes
+    useEffect(() => {
+        console.log(
+            `🔄 Loading state changed to: ${isLoading} at ${new Date().toLocaleTimeString()}`
+        );
+    }, [isLoading]);
+
+    // Log when restaurant data becomes available
+    useEffect(() => {
+        if (restaurant) {
+            console.log(
+                `📊 Restaurant data available at ${new Date().toLocaleTimeString()}`
+            );
+        }
+    }, [restaurant]);
 
     // Check if this is the first visit
     useEffect(() => {
@@ -51,14 +98,41 @@ export default function RestaurantPage(props: { params: Params }) {
 
     // Update active category when language changes to maintain the same category
     useEffect(() => {
-        const mappedCategory =
-            restaurant.categoryMapping[language][
-                activeCategory as keyof typeof restaurant.categoryMapping.en
-            ];
-        if (mappedCategory) {
-            setActiveCategory(mappedCategory);
+        if (restaurant) {
+            const mappedCategory =
+                restaurant.categoryMapping[language][
+                    activeCategory as keyof typeof restaurant.categoryMapping.en
+                ];
+            if (mappedCategory) {
+                setActiveCategory(mappedCategory);
+            }
         }
-    }, [language, activeCategory, restaurant.categoryMapping, restaurant]);
+    }, [language, activeCategory, restaurant]);
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <p>{language === "tr" ? "Yükleniyor..." : "Loading..."}</p>
+            </div>
+        );
+    }
+
+    if (error || !restaurant) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                Failed to load restaurant data
+            </div>
+        );
+    }
+
+    // Get the appropriate menu data and categories based on language
+    const currentMenuData =
+        language === "tr" ? restaurant.menuData.tr : restaurant.menuData.en;
+    const categories = restaurant.categories[language];
+
+    // Get the current category data
+    const currentCategory =
+        currentMenuData[activeCategory as keyof typeof currentMenuData];
 
     return (
         <div className="flex min-h-screen flex-col">
@@ -93,6 +167,7 @@ export default function RestaurantPage(props: { params: Params }) {
                     </div>
                 </div>
 
+                {/* Rest of your component... */}
                 {/* Category Title */}
                 <div className="px-4 pt-4 pb-2 text-center">
                     <h2 className="text-2xl font-bold text-primary">
@@ -111,6 +186,7 @@ export default function RestaurantPage(props: { params: Params }) {
                                 key={index}
                                 className="overflow-hidden border-accent menu-card-shadow md:hover:shadow-md md:transition-shadow"
                             >
+                                {/* Card content... */}
                                 <div className="relative -mt-10">
                                     <div className="relative h-60 w-full overflow-hidden">
                                         <Image
@@ -162,7 +238,7 @@ export default function RestaurantPage(props: { params: Params }) {
                     </div>
                 </div>
 
-                {/* Mobile Navigation Tabs - Only visible on small screens */}
+                {/* Mobile Navigation Tabs */}
                 <div className="fixed bottom-0 left-0 right-0 z-10 bg-background border-t border-accent shadow-md md:hidden">
                     <div className="grid grid-cols-4 gap-px bg-accent">
                         {categories.map((category) => (
@@ -188,4 +264,3 @@ export default function RestaurantPage(props: { params: Params }) {
         </div>
     );
 }
-

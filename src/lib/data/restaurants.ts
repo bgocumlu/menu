@@ -85,8 +85,8 @@ const prices = {
 };
 
 // Anatolia restaurant data
-const anatoliaRestaurant: Restaurant = {
-    id: "anatolia",
+export const anatoliaRestaurant: Restaurant = {
+    id: "menu",
     name: "Anatolia",
     cuisine: "Turkish",
     menuData: {
@@ -445,13 +445,3 @@ const anatoliaRestaurant: Restaurant = {
         address: "123 Turkish Avenue, City",
     },
 };
-
-// Store all restaurants
-const restaurants: Record<string, Restaurant> = {
-    anatolia: anatoliaRestaurant,
-};
-
-// Function to get restaurant data by ID
-export function getRestaurantData(id: string): Restaurant | null {
-    return restaurants[id] || null;
-}

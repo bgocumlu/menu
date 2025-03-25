@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { notFound } from "next/navigation"
 import {
   Save,
   Trash2,
@@ -38,27 +37,43 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 
-import { getRestaurantData, type MenuItem, type MenuData, type Restaurant } from "@/lib/data/restaurants"
+import { type MenuItem, type MenuData, type Restaurant } from "@/lib/data/restaurants"
 import { useLanguage } from "@/lib/context/language-context"
+import { useRestaurant } from "@/lib/hooks/useRestaurant";
 
-import { use } from "react";
+import { anatoliaRestaurant } from "@/lib/data/restaurants"
 
-type Params = Promise<{ restaurantId: string }>;
+async function verifyPassword(password: string) {
+    const response = await fetch("/api/password", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+    });
 
-const correctPassword = "password"; // Hardcoded password
+    const data = await response.json();
+    return data.message === "Password is correct";
+}
 
 
-export default function EditMenuPage(props: { params: Params }) {
-    const params = use(props.params);
-    const { restaurantId } = params;
-    const originalRestaurant = getRestaurantData(restaurantId);
+export const loadDefaultAnatoliaRestaurant = async () => {
+    const response = await fetch("/api/restaurant", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(anatoliaRestaurant), // Send the updated data
+    });
+
+    if (response.ok) {
+        alert("Restaurant data updated successfully");
+    } else {
+        alert("Failed to update restaurant data");
+    }
+};
+
+export default function EditMenuPage() {
     const router = useRouter();
     const { toast } = useToast();
-
-    // If restaurant doesn't exist, show 404
-    if (!originalRestaurant) {
-        notFound();
-    }
 
     const { language, setLanguage } = useLanguage();
     const { theme, setTheme } = useTheme();
@@ -74,6 +89,24 @@ export default function EditMenuPage(props: { params: Params }) {
     const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
     const [newCategoryId, setNewCategoryId] = useState("");
     const [newCategoryName, setNewCategoryName] = useState("");
+
+    const { restaurant: originalRestaurant } = useRestaurant();
+
+    const handleSubmit = async () => {
+        const response = await fetch("/api/restaurant", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(workingCopy), // Send the updated data
+        });
+
+        if (response.ok) {
+            alert("Restaurant data updated successfully");
+        } else {
+            alert("Failed to update restaurant data");
+        }
+    };
 
     // Helper functions for visual feedback during reordering
     const handleCategoryReorder = (
@@ -136,7 +169,7 @@ export default function EditMenuPage(props: { params: Params }) {
 
     // Reset working copy to original data
     const resetToDefault = () => {
-        if (originalRestaurant) {
+        if (originalRestaurant) {            
             setWorkingCopy(JSON.parse(JSON.stringify(originalRestaurant)));
 
             // Reset active category to first one
@@ -151,6 +184,8 @@ export default function EditMenuPage(props: { params: Params }) {
                         ? "Tüm değişiklikler varsayılan değerlere sıfırlandı"
                         : "All changes have been reset to default values",
             });
+        } else {
+            loadDefaultAnatoliaRestaurant();
         }
     };
 
@@ -615,8 +650,9 @@ export default function EditMenuPage(props: { params: Params }) {
 
     // Actual save function that runs after password verification
     const handleSaveWithPassword = async () => {
+        const res = await verifyPassword(password);
 
-        if (password !== correctPassword) {
+        if (!res) {
             setPasswordError(true);
             return;
         }
@@ -629,6 +665,7 @@ export default function EditMenuPage(props: { params: Params }) {
 
         // Log the complete data structure
         console.log("Working Copy:", workingCopy);
+        handleSubmit();
 
         toast({
             title:
@@ -782,7 +819,7 @@ export default function EditMenuPage(props: { params: Params }) {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => router.push(`/${restaurantId}`)}
+                                onClick={() => router.push(`/menu`)}
                                 aria-label="Back to menu"
                             >
                                 <ArrowLeft className="h-5 w-5" />
@@ -1789,6 +1826,7 @@ export default function EditMenuPage(props: { params: Params }) {
                                                 )
                                             }
                                             placeholder="restaurant-id"
+                                            disabled
                                         />
                                         <p className="text-xs text-muted-foreground">
                                             {language === "tr"
@@ -2175,5 +2213,5 @@ export default function EditMenuPage(props: { params: Params }) {
             </Dialog>
         </div>
     );
-}
 
+}
