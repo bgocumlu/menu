@@ -54,8 +54,7 @@ async function verifyPassword(password: string) {
     return data.message === "Password is correct";
 }
 
-
-export const loadDefaultAnatoliaRestaurant = async () => {
+const loadDefaultAnatoliaRestaurant = async () => {
     const response = await fetch("/api/restaurant", {
         method: "POST",
         headers: {
