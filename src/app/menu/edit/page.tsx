@@ -1507,7 +1507,6 @@ export default function EditMenuPage() {
                                                                                 )
                                                                             }
                                                                             type="text"
-                                                                            inputMode="decimal"
                                                                         />
                                                                     </div>
                                                                 </div>
