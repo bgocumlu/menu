@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import useSWR from "swr";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -12,6 +12,7 @@ import { MenuFooter } from "@/components/menu-footer";
 import { LanguageTooltip } from "@/components/language-tooltip";
 import { Restaurant } from "@/lib/data/restaurants";
 import { useLanguage } from "@/lib/context/language-context";
+import { ChevronUp } from "lucide-react";
 
 // Fetcher function for SWR with logging
 const fetcher = async (url: string) => {
@@ -47,6 +48,29 @@ export default function RestaurantPage() {
     const { language } = useLanguage();
     const [activeCategory, setActiveCategory] = useState("starters");
     const [firstVisit, setFirstVisit] = useState(true);
+    const [showScrollTop, setShowScrollTop] = useState(false);
+
+    // Handle scroll event to show/hide scroll-to-top button
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                setShowScrollTop(true);
+            } else {
+                setShowScrollTop(false);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    // Function to scroll to top
+    const scrollToTop = useCallback(() => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    }, []);
 
     // Log component renders
     console.log(`🔄 Component rendering at ${new Date().toLocaleTimeString()}`);
@@ -108,6 +132,15 @@ export default function RestaurantPage() {
             }
         }
     }, [language, activeCategory, restaurant]);
+
+    // Scroll to top when category changes
+    useEffect(() => {
+        // Scroll to top with smooth animation
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    }, [activeCategory]);
 
     if (isLoading) {
         return (
@@ -258,6 +291,19 @@ export default function RestaurantPage() {
                         ))}
                     </div>
                 </div>
+
+                {/* Scroll to top button */}
+                {showScrollTop && (
+                    <button
+                        onClick={scrollToTop}
+                        className="fixed bottom-20 right-4 z-10 p-2 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-opacity"
+                        aria-label={
+                            language === "tr" ? "Yukarı çık" : "Scroll to top"
+                        }
+                    >
+                        <ChevronUp className="h-5 w-5" />
+                    </button>
+                )}
             </main>
 
             <MenuFooter restaurant={restaurant} />
